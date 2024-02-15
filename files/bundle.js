@@ -39517,7 +39517,7 @@ document.body.addEventListener("click", function (e) {
                             }.bind(this)
                         );
                     }
-                    this.text.length > 140 && ((n = this.text.substr(0, 140) + "…"), (t = !0)),
+                    this.text.length > 40 && ((n = this.text.substr(0, 140) + "…"), (t = !0)),
                         (t || i) &&
                             ((this.text = n.trim()),
                             (this.htmlText = TD.util.transform(this.text, this.entities))),
