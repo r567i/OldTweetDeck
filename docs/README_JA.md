@@ -74,6 +74,13 @@ TweetDeckのファイルが更新された場合は、タブを再読み込み�
 API制限に達しているため読み込めていません。しばらくしてAPI制限が解除されるとまた表示されます。  
 
 ## 更新履歴
+### 3.3.3
+* カラムが消える問題を更に修正
+
+### 3.3.2
+* ブラウザに保存された状態をインポート(取込)/エクスポート(出力)するためのボタンを追加
+![image](https://github.com/katabame/TweetDeck/assets/9818101/08d86b0b-2a56-457e-97d4-689fbf616d11)
+
 
 ### 3.3.1
 * フィルターを変更するとカラムが消える問題を修正
@@ -223,4 +230,4 @@ manifest V2 で作り直し外部サーバーを必要としないように変�
 [@katabame](https://twitter.com/katabame)  
 以下の時点の内容を基に翻訳されています。  
 * README: commit [294882a](https://github.com/dimdenGD/OldTweetDeck/commit/294882a3d5de029b2b1158d331c8549c941e34ac)  
-* 更新履歴: release/tag [v3.3.1](https://github.com/dimdenGD/OldTweetDeck/releases/tag/v3.3.1)
+* 更新履歴: release/tag [v3.3.3](https://github.com/dimdenGD/OldTweetDeck/releases/tag/v3.3.3)
