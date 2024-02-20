@@ -1,6 +1,6 @@
 const PUBLIC_TOKENS = [
-    "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA", // w
-    "Bearer AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF", // x
+    "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+    "Bearer AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF",
 ];
 const NEW_API = "https://twitter.com/i/api/graphql";
 const cursors = {};
@@ -71,10 +71,10 @@ function cleanUp() {
     localStorage.OTDfeeds = JSON.stringify(feeds);
 }
 
-function getFollows(cursor = -1, count = 5000) {
+function getFollows(id = getCurrentUserId(), cursor = -1, count = 5000) {
 	return new Promise(function (resolve, reject) {
 		var xhr = new XMLHttpRequest();
-		xhr.open("GET", `https://api.twitter.com/1.1/friends/ids.json?cursor=${cursor}&stringify_ids=true&count=${count}`, true);
+		xhr.open("GET", `https://api.twitter.com/1.1/friends/ids.json?user_id=${id}&cursor=${cursor}&stringify_ids=true&count=${count}`, true);
 		xhr.setRequestHeader("X-Twitter-Active-User", "yes");
 		xhr.setRequestHeader("X-Twitter-Auth-Type", "OAuth2Session");
 		xhr.setRequestHeader("X-Twitter-Client-Language", "en");
@@ -99,21 +99,25 @@ function getFollows(cursor = -1, count = 5000) {
 
 let followsData = JSON.parse(localStorage.OTDfollowsData || "{}");
 
-function updateFollows() {
-    let id = getCurrentUserId() ?? localStorage.twitterAccountID;
+let updatingFollows = false;
+function updateFollows(id = getCurrentUserId()) {
     if(followsData[id] && followsData[id].lastUpdate && Date.now() - +followsData[id].lastUpdate < 1000 * 60 * 60 * 6) return;
+    if(updatingFollows) return;
+    updatingFollows = true;
+
     if(!followsData[id]) followsData[id] = {};
     let newfollows = [];
     let cursor = -1;
     let count = 5000;
     let i = 0;
     let get = async () => {
-        let res = await getFollows(cursor, count);
+        let res = await getFollows(id, cursor, count);
         newfollows = newfollows.concat(res.ids);
         if(res.next_cursor_str === "0" || i++ > 10) {
             followsData[id].lastUpdate = Date.now();
             followsData[id].data = newfollows;
             localStorage.OTDfollowsData = JSON.stringify(followsData);
+            updatingFollows = false;
             return;
         }
         cursor = res.next_cursor_str;
@@ -368,11 +372,13 @@ const proxyRoutes = [
         //     }
         // },
         beforeSendHeaders: (xhr) => {
+            xhr.storage.user_id = xhr.modReqHeaders["x-act-as-user-id"] ?? getCurrentUserId();
             xhr.modReqHeaders["Content-Type"] = "application/json";
             xhr.modReqHeaders["X-Twitter-Active-User"] = "yes";
             xhr.modReqHeaders["X-Twitter-Client-Language"] = "en";
             xhr.modReqHeaders["Authorization"] = PUBLIC_TOKENS[1];
             delete xhr.modReqHeaders["X-Twitter-Client-Version"];
+            updateFollows(xhr.storage.user_id);
         },
         afterRequest: (xhr) => {
             let data;
@@ -390,21 +396,21 @@ const proxyRoutes = [
                 return data;
             } 
 
-            let currentUserId = getCurrentUserId();
-            let follows = followsData[currentUserId];
-            if(follows) follows = follows.data;
+            let userId = xhr.storage.user_id;
+            let follows = followsData[userId];
+            if(follows && follows.data) follows = follows.data;
             else follows = [];
             let filtered = data.filter(t => 
                 !t.in_reply_to_user_id_str || // not a reply
-                t.user.id_str === currentUserId || // my tweet
+                t.user.id_str === userId || // my tweet
                 (
                     // reply to someone i follow from someone i follow
                     follows.includes(t.in_reply_to_user_id_str) && 
-                    t.user.following
+                    t.user.following && t.entities.user_mentions.every(user => follows.includes(user.id_str))
                 ) ||
                 (
                     // reply to me from someone i follow
-                    t.in_reply_to_user_id_str === currentUserId &&
+                    t.in_reply_to_user_id_str === userId &&
                     t.user.following
                 )
             );
@@ -704,7 +710,7 @@ const proxyRoutes = [
             xhr.modReqHeaders["X-Twitter-Active-User"] = "yes";
             xhr.modReqHeaders["X-Twitter-Client-Language"] = "en";
             xhr.modReqHeaders["Authorization"] =
-                PUBLIC_TOKENS[localStorage.OTDuseDifferentToken === "1" ? 1 : 0];
+                PUBLIC_TOKENS[localStorage.OTDuseDifferentToken === "1" ? (Math.random() > 0.5 ? 1 : 0) : 0];
             delete xhr.modReqHeaders["X-Twitter-Client-Version"];
         },
         afterRequest: (xhr) => {
@@ -942,7 +948,7 @@ const proxyRoutes = [
             xhr.modReqHeaders["X-Twitter-Active-User"] = "yes";
             xhr.modReqHeaders["X-Twitter-Client-Language"] = "en";
             xhr.modReqHeaders["Authorization"] =
-                PUBLIC_TOKENS[localStorage.OTDuseDifferentToken === "1" ? 1 : 0];
+                PUBLIC_TOKENS[localStorage.OTDuseDifferentToken === "1" ? (Math.random() > 0.5 ? 1 : 0) : 0];
             delete xhr.modReqHeaders["X-Twitter-Client-Version"];
         },
         afterRequest: (xhr) => {
@@ -1322,6 +1328,78 @@ const proxyRoutes = [
             xhr.storage.tweet_id = originalUrl.pathname.match(
                 /\/1.1\/statuses\/show\/(\d+).json/
             )[1];
+            xhr.modUrl = `https://twitter.com/i/api/graphql/KwGBbJZc6DBx8EKmyQSP7g/TweetDetail?variables=${encodeURIComponent(
+                JSON.stringify({
+                    focalTweetId: xhr.storage.tweet_id,
+                    with_rux_injections: false,
+                    includePromotedContent: false,
+                    withCommunity: true,
+                    withQuickPromoteEligibilityTweetFields: true,
+                    withBirdwatchNotes: true,
+                    withVoice: true,
+                    withV2Timeline: true,
+                })
+            )}&features=${encodeURIComponent(
+                JSON.stringify({
+                    rweb_lists_timeline_redesign_enabled: false,
+                    blue_business_profile_image_shape_enabled: true,
+                    responsive_web_graphql_exclude_directive_enabled: true,
+                    verified_phone_label_enabled: false,
+                    creator_subscriptions_tweet_preview_api_enabled: false,
+                    responsive_web_graphql_timeline_navigation_enabled: true,
+                    responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
+                    tweetypie_unmention_optimization_enabled: true,
+                    vibe_api_enabled: true,
+                    responsive_web_edit_tweet_api_enabled: true,
+                    graphql_is_translatable_rweb_tweet_is_translatable_enabled: true,
+                    view_counts_everywhere_api_enabled: true,
+                    longform_notetweets_consumption_enabled: true,
+                    tweet_awards_web_tipping_enabled: false,
+                    freedom_of_speech_not_reach_fetch_enabled: true,
+                    standardized_nudges_misinfo: true,
+                    tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled: false,
+                    interactive_text_enabled: true,
+                    responsive_web_text_conversations_enabled: false,
+                    longform_notetweets_rich_text_read_enabled: true,
+                    longform_notetweets_inline_media_enabled: false,
+                    responsive_web_enhance_cards_enabled: false,
+                })
+            )}`;
+        },
+        beforeSendHeaders: (xhr) => {
+            xhr.modReqHeaders["Content-Type"] = "application/json";
+            xhr.modReqHeaders["X-Twitter-Active-User"] = "yes";
+            xhr.modReqHeaders["X-Twitter-Client-Language"] = "en";
+            xhr.modReqHeaders["Authorization"] =
+                PUBLIC_TOKENS[localStorage.OTDuseDifferentToken === "1" ? 1 : 0];
+            delete xhr.modReqHeaders["X-Twitter-Client-Version"];
+        },
+        afterRequest: (xhr) => {
+            let data;
+            try {
+                data = JSON.parse(xhr.responseText);
+            } catch (e) {
+                console.error(e);
+                return {};
+            }
+            if (data.errors && data.errors[0]) {
+                return {};
+            }
+            let ic = data.data.threaded_conversation_with_injections_v2.instructions
+                .find((i) => i.type === "TimelineAddEntries")
+                .entries.find((e) => e.entryId === `tweet-${xhr.storage.tweet_id}`)
+                .content.itemContent;
+            let res = ic.tweet_results.result;
+            let tweet = parseTweet(res);
+            return tweet;
+        },
+    },
+    {
+        path: "/1.1/statuses/show.json",
+        method: "GET",
+        beforeRequest: (xhr) => {
+            let originalUrl = new URL(xhr.originalUrl);
+            xhr.storage.tweet_id = originalUrl.searchParams.get("id");
             xhr.modUrl = `https://twitter.com/i/api/graphql/KwGBbJZc6DBx8EKmyQSP7g/TweetDetail?variables=${encodeURIComponent(
                 JSON.stringify({
                     focalTweetId: xhr.storage.tweet_id,
