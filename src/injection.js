@@ -1,9 +1,30 @@
+let script = document.createElement('script');
+script.innerHTML = `
+Object.defineProperty(window, '__SCRIPTS_LOADED__', {
+    value: { main: true, vendor: true },
+    writable: false,
+    configurable: false 
+});
+`;
+if(document.head) {
+    document.head.appendChild(script);
+} else {
+    let observer = new MutationObserver(() => {
+        if(document.head) {
+            document.head.appendChild(script);
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
 (async () => {
     let html = await fetch(chrome.runtime.getURL('/files/index.html')).then(r => r.text());
     document.documentElement.innerHTML = html;
 
-    let [interception_js, vendor_js, bundle_js, bundle_css, twitter_text] =
+    let [challenge_js, interception_js, vendor_js, bundle_js, bundle_css, twitter_text] =
         await Promise.allSettled([
+            fetch(chrome.runtime.getURL("/src/challenge.js")).then(r => r.text()),
             fetch(chrome.runtime.getURL("/src/interception.js")).then(r => r.text()),
             fetch(chrome.runtime.getURL("/files/vendor.js")).then(r => r.text()),
             fetch(chrome.runtime.getURL("/files/bundle.js")).then(r => r.text()),
@@ -12,12 +33,14 @@
         ]);
     if (!localStorage.getItem("OTDalwaysUseLocalFiles")) {
         const [
+            remote_challenge_js_req,
             remote_interception_js_req,
             remote_vendor_js_req,
             remote_bundle_js_req,
             remote_bundle_css_req,
             remote_twitter_text_req,
         ] = await Promise.allSettled([
+            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/challenge.js"),
             fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/interception.js"),
             fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/vendor.js"),
             fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/bundle.js"),
@@ -26,6 +49,7 @@
         ]);
         
         if(
+            (remote_challenge_js_req.value && remote_challenge_js_req.value.ok) ||
             (remote_interception_js_req.value && remote_interception_js_req.value.ok) || 
             (remote_vendor_js_req.value && remote_vendor_js_req.value.ok) ||
             (remote_bundle_js_req.value && remote_bundle_js_req.value.ok) ||
@@ -33,18 +57,30 @@
             (remote_twitter_text_req.value && remote_twitter_text_req.value.ok)
         ) {
             const [
+                remote_challenge_js,
                 remote_interception_js,
                 remote_vendor_js,
                 remote_bundle_js,
                 remote_bundle_css,
                 remote_twitter_text,
             ] = await Promise.allSettled([
+                remote_challenge_js_req.value.text(),
                 remote_interception_js_req.value.text(),
                 remote_vendor_js_req.value.text(),
                 remote_bundle_js_req.value.text(),
                 remote_bundle_css_req.value.text(),
                 remote_twitter_text_req.value.text(),
             ]);
+
+            if (
+                remote_challenge_js_req.value &&
+                remote_challenge_js_req.value.ok &&
+                remote_challenge_js.status === "fulfilled" &&
+                remote_challenge_js.value.length > 30
+            ) {
+                challenge_js = remote_challenge_js;
+                console.log("Using remote challenge.js");
+            }
 
             if (
                 remote_interception_js_req.value &&
@@ -93,6 +129,10 @@
             }
         }
     }
+
+    let challenge_js_script = document.createElement("script");
+    challenge_js_script.innerHTML = challenge_js.value.replaceAll('SOLVER_URL', chrome.runtime.getURL("solver.html"));
+    document.head.appendChild(challenge_js_script);
 
     let interception_js_script = document.createElement("script");
     interception_js_script.innerHTML = interception_js.value;

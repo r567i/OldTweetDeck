@@ -7,7 +7,7 @@
 
 ### 他の言語での説明
 [English README](/README.md)  
-[한국어 README](docs/README_KO.md)
+[한국어 README](/docs/README_KO.md)
 
 ## インストール方法
 
@@ -21,20 +21,20 @@
 4. デベロッパーモードを有効にする (拡張機能ページの右上に切り替えスイッチがあります)
 5. "パッケージ化されていない拡張機能を読み込む"をクリックする
 6. Zipファイルを展開したフォルダを選択する
-7. https://twitter.com/i/tweetdeck にアクセスして昔のTweetDeckを楽しむ
+7. https://x.com/i/tweetdeck にアクセスして昔のTweetDeckを楽しむ
 8. [開発が継続できるように支援する](https://www.patreon.com/dimdendev)
 
 ### Firefox
 
 #### Nightly / Developer Edition
 
-1. [リリースページ](https://github.com/dimdenGD/OldTweetDeck/releases) から `OldTweetDeckChrome.zip` をダウンロードする
+1. [リリースページ](https://github.com/dimdenGD/OldTweetDeck/releases) から `OldTweetDeckFirefox.zip` をダウンロードする
 2. 高度な設定ページを開く (`about:config`)
 3. `xpinstall.signatures.required` の設定を false に変更する
 4. アドオンページを開く (`about:addons`)
 5. アドオンページ右上の歯車アイコン→"ファイルからアドオンをインストール..."をクリックする
 6. ダウンロードしたZipファイルを選択する
-7. https://twitter.com/i/tweetdeck にアクセスして昔のTweetDeckを楽しむ
+7. https://x.com/i/tweetdeck にアクセスして昔のTweetDeckを楽しむ
 8. [開発が継続できるように支援する](https://www.patreon.com/dimdendev)
 
 #### Stable
@@ -74,6 +74,37 @@ TweetDeckのファイルが更新された場合は、タブを再読み込み�
 API制限に達しているため読み込めていません。しばらくしてAPI制限が解除されるとまた表示されます。  
 
 ## 更新履歴
+OldTweetDeckが`x.com`上で動作しない問題を修正しました。  
+(訳者注: TweetDeckのURLが`twitter.com/i/tweetdeck`から`x.com/i/tweetdeck`に変わりました)
+
+### 3.6.2
+* スタイル表示を修正
+* チーム機能を修正
+
+### 3.6.1
+* ツイート作成パネルが正しく表示されない問題を修正
+* カラムが読み込まれない問題とツイートが送信されない問題を修正
+
+**この拡張機能の開発を続けるために[寄付](https://dimden.dev/donate/)をご検討ください**
+
+<details>
+<summary>過去の更新履歴</summary>
+
+### 3.5.5
+* 読み込まれない問題を修正
+
+### 3.5.4
+* エラーハンドリングを改善
+
+### 3.5.3
+* ウィルス対策ソフトに誤検知される問題を修正
+
+### 3.5
+* ログアウトやロックされる問題をおそらく修正できました。  
+* このバージョンでは、ウェブ版のTwitterと比較してOldTweetDeckのリクエストに不足していた最後のヘッダーをついに実装しました。  
+* このジェネレーターは非常に難読化されており、基本的にはリクエストが実際にウェブ版のTwitterから行われているかどうかのセキュリティチェックを行います。  
+* 通常のリクエストと違うのはこれだけなので、これがログアウトやロックされる原因であることを祈ります。  
+
 ### 3.4.0
 * メインアカウント以外で他のユーザーのリプライが表示される問題を修正
 * フォロー中のユーザーが自分自身にリプライをしている場合、他のユーザーのリプライが表示される問題を修正
@@ -86,7 +117,6 @@ API制限に達しているため読み込めていません。しばらくし�
 * ブラウザに保存された状態をインポート(取込)/エクスポート(出力)するためのボタンを追加
 ![image](https://github.com/katabame/TweetDeck/assets/9818101/08d86b0b-2a56-457e-97d4-689fbf616d11)
 
-
 ### 3.3.1
 * フィルターを変更するとカラムが消える問題を修正
 
@@ -94,11 +124,6 @@ API制限に達しているため読み込めていません。しばらくし�
 * OldTweetdeckが読み込まれない問題を修正
   * Twitterがカラムの位置と全体の状態を保存するAPIを削除したため、それらのAPIを再現しブラウザ内に状態を保存するようにしました
 * **TweetDeckの状態がリセットされるため、更新前でTweetDeckを表示できている場合は検索クエリやカラムの配置をメモしておくことをおすすめします！**
-
-**この拡張機能の開発を続けるために[寄付](https://dimden.dev/donate/)をご検討ください**
-
-<details>
-<summary>過去の更新履歴</summary>
 
 ### 3.2.3
 * 複数アカウントでのリプライのフィルタリングに関する不具合を修正
@@ -235,4 +260,4 @@ manifest V2 で作り直し外部サーバーを必要としないように変�
 [@katabame](https://twitter.com/katabame)  
 以下の時点の内容を基に翻訳されています。  
 * README: commit [294882a](https://github.com/dimdenGD/OldTweetDeck/commit/294882a3d5de029b2b1158d331c8549c941e34ac)  
-* 更新履歴: release/tag [v3.4.0](https://github.com/dimdenGD/OldTweetDeck/releases/tag/v3.4.0)
+* 更新履歴: release/tag [v3.6.2](https://github.com/dimdenGD/OldTweetDeck/releases/tag/v3.6.2)
