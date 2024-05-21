@@ -40,12 +40,18 @@ if(document.head) {
             remote_bundle_css_req,
             remote_twitter_text_req,
         ] = await Promise.allSettled([
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/challenge.js"),
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/interception.js"),
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/vendor.js"),
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/bundle.js"),
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/bundle.css"),
-            fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/twitter-text.js"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/challenge.js"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/src/interception.js"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/vendor.js"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/bundle.js"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/bundle.css"),
+            // fetch("https://raw.githubusercontent.com/dimdenGD/OldTweetDeck/main/files/twitter-text.js"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/src/challenge.js"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/src/interception.js"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/files/vendor.js"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/files/bundle.js"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/files/bundle.css"),
+            fetch("https://raw.githubusercontent.com/r567i/OldTweetDeck/test/files/twitter-text.js"),
         ]);
         
         if(
